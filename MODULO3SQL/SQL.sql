@@ -288,60 +288,65 @@ FROM region;
 SELECT * FROM vw_prodotti;
 SELECT * FROM vw_regioni;
 
+
+
+
 -- GOVERNANCE E PRIVACY APPLICATA
+-- NOTA: SCHEMA IPOTETICO (product/sales generico con purchase_cost, sales_amount, 
+-- margin) DIVERSO DA TOYSGROUP. SEZIONE DA LEGGERE/VALUTARE, NON DA ESEGUIRE.
+/*
 -- Caso 1 — Vista pubblica
 CREATE VIEW vw_prodotti_rivenditori AS
-SELECT ProductID, ProductName, Category, PurchaseCost FROM Product;
+SELECT product_id, product_name, category, purchase_cost FROM product;
 
--- Causa: è una vista pubblica (destinata a rivenditori esterni) che espone PurchaseCost 
+-- Causa: è una vista pubblica (destinata a rivenditori esterni) che espone purchase_cost
 -- il costo di acquisto interno, un dato commercialmente sensibile che un soggetto esterno
 -- non dovrebbe vedere. Viola il principio di minimizzazione dei dati (esporre solo ciò che è strettamente necessario allo scopo).
 
 -- Versione corretta:
 CREATE VIEW vw_prodotti_rivenditori AS
-SELECT ProductID, ProductName, Category FROM Product;
+SELECT product_id, product_name, category FROM product;
 
 -- Caso 2 — Scheda fornitori
-CREATE TABLE SupplierContact (SupplierID INT, Phone VARCHAR(20));
+CREATE TABLE supplier_contact (supplier_id INT, phone VARCHAR(20));
 -- condivisa col reparto marketing
 
--- Causa: i contatti dei fornitori vengono condivisi con un reparto (marketing) 
+-- Causa: i contatti dei fornitori vengono condivisi con un reparto (marketing)
 -- che non ha un bisogno legittimo (need-to-know) di quei dati — la gestione fornitori
---  è tipicamente competenza di acquisti/procurement, non marketing. Viola il principio di limitazione 
+-- è tipicamente competenza di acquisti/procurement, non marketing. Viola il principio di limitazione
 -- della finalità e di accesso per ruolo.
 
--- Versione corretta: restringere l'accesso alla tabella solo al reparto competente, ad esempio tramite 
+-- Versione corretta: restringere l'accesso alla tabella solo al reparto competente, ad esempio tramite
 -- permessi/ruolo dedicato invece di condivisione libera:
-CREATE TABLE SupplierContact (SupplierID INT, Phone VARCHAR(20));
-GRANT SELECT ON SupplierContact TO ruolo_acquisti;
+GRANT SELECT ON supplier_contact TO ruolo_acquisti;
 -- nessun accesso concesso a marketing
 
 -- Caso 3 — Vista commerciale
 CREATE VIEW vw_sales_margine AS
-SELECT SalesID, SalesAmount, PurchaseCost, Margin FROM Sales;
+SELECT sales_id, sales_amount, purchase_cost, margin FROM sales;
 
-
--- Causa: una vista ad uso commerciale (venditori/agenti) che espone PurchaseCost e Margin — dati che 
--- rivelano la marginalità aziendale, informazione sensibile che dovrebbe restare riservata a management/finance, 
+-- Causa: una vista ad uso commerciale (venditori/agenti) che espone purchase_cost e margin — dati che
+-- rivelano la marginalità aziendale, informazione sensibile che dovrebbe restare riservata a management/finance,
 -- non al reparto vendite operativo. Viola ancora minimizzazione dei dati e segregazione per ruolo.
 
 -- Versione corretta:
 CREATE VIEW vw_sales_margine AS
-SELECT SalesID, SalesAmount FROM Sales;
+SELECT sales_id, sales_amount FROM sales;
 
 -- Caso 4 — Log di reporting
-CREATE TABLE ReportAccessLog (
-  UserID INT, QueryText VARCHAR(250), AccessDate DATETIME
+CREATE TABLE report_access_log (
+  user_id INT, query_text VARCHAR(250), access_date DATETIME
 ); -- nessuna scadenza
 
--- Causa: il log conserva QueryText (che potrebbe contenere dati sensibili nelle query stesse) 
+-- Causa: il log conserva query_text (che potrebbe contenere dati sensibili nelle query stesse)
 -- senza alcuna politica di scadenza/retention. Viola il principio di limitazione della conservazione
 -- (i dati vanno tenuti solo per il tempo necessario, non indefinitamente).
 
 -- Versione corretta: aggiungere una policy di retention esplicita, ad esempio con un campo di scadenza o un processo di pulizia periodica:
-CREATE TABLE ReportAccessLog (
-  UserID INT, 
-  QueryText VARCHAR(250), 
-  AccessDate DATETIME,
-  ExpiryDate DATETIME  -- es. AccessDate + 90 giorni, con job di pulizia automatica
+CREATE TABLE report_access_log (
+  user_id INT,
+  query_text VARCHAR(250),
+  access_date DATETIME,
+  expiry_date DATETIME  -- es. access_date + 90 giorni, con job di pulizia automatica
 );
+*/
